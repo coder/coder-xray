@@ -9,12 +9,13 @@ import (
 	"github.com/coder/coder/v2/codersdk/agentsdk"
 	"github.com/coder/xray/jfrog"
 
-	"cdr.dev/slog"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
+
+	"cdr.dev/slog"
 )
 
 type K8sReporter struct {
@@ -29,6 +30,7 @@ type K8sReporter struct {
 
 	ctx         context.Context
 	podInformer cache.SharedIndexInformer
+	errChan     chan error
 }
 
 type WorkspaceAgent struct {
@@ -38,6 +40,7 @@ type WorkspaceAgent struct {
 
 func (k *K8sReporter) Init(ctx context.Context) error {
 	k.ctx = ctx
+	k.errChan = make(chan error)
 
 	podFactory := informers.NewSharedInformerFactoryWithOptions(k.Client, 0, informers.WithNamespace(k.Namespace), informers.WithTweakListOptions(func(lo *v1.ListOptions) {
 		lo.FieldSelector = k.FieldSelector
@@ -54,6 +57,9 @@ func (k *K8sReporter) Init(ctx context.Context) error {
 				return
 			}
 
+			log := k.Logger.With(
+				slog.F("pod_name", pod.Name),
+			)
 			var isWorkspace bool
 			for _, container := range pod.Spec.Containers {
 				var agentToken string
@@ -69,20 +75,20 @@ func (k *K8sReporter) Init(ctx context.Context) error {
 					continue
 				}
 
+				log = log.With(
+					slog.F("container_name", container.Name),
+					slog.F("container_image", container.Image),
+				)
+
 				image, err := jfrog.ParseImage(container.Image)
 				if err != nil {
-					k.Logger.Error(ctx, "parse image",
-						slog.F("pod_name", pod.Name),
-						slog.F("container_name", container.Name),
-						slog.F("container_image", container.Image),
-						slog.Error(err),
-					)
+					log.Error(ctx, "parse image", slog.Error(err))
 					return
 				}
 
 				scan, err := k.JFrogClient.ScanResults(image)
 				if err != nil {
-					k.Logger.Error(ctx, "fetch scan results", slog.Error(err))
+					log.Error(ctx, "fetch scan results", slog.Error(err))
 					return
 				}
 
@@ -90,9 +96,15 @@ func (k *K8sReporter) Init(ctx context.Context) error {
 				agentClient.SetSessionToken(agentToken)
 				manifest, err := agentClient.Manifest(ctx)
 				if err != nil {
-					k.Logger.Error(ctx, "Get agent manifest", slog.Error(err))
+					log.Error(ctx, "Get agent manifest", slog.Error(err))
 					return
 				}
+
+				log = log.With(
+					slog.F("workspace_id", manifest.WorkspaceID),
+					slog.F("agent_id", manifest.AgentID),
+					slog.F("workspace_name", manifest.WorkspaceName),
+				)
 
 				cclient := codersdk.New(k.CoderURL)
 				cclient.SetSessionToken(k.CoderToken)
@@ -103,12 +115,12 @@ func (k *K8sReporter) Init(ctx context.Context) error {
 					High:        scan.SecurityIssues.High,
 				})
 				if err != nil {
-					k.Logger.Error(ctx, "post xray results", slog.Error(err))
+					log.Error(ctx, "post xray results", slog.Error(err))
 					return
 				}
 			}
 			if isWorkspace {
-				k.Logger.Info(ctx, "uploaded workspace results!", slog.F("name", pod.Name), slog.F("namespace", pod.Namespace))
+				log.Info(ctx, "uploaded workspace results!", slog.F("pod_name", pod.Name), slog.F("namespace", pod.Namespace))
 			}
 		},
 	})
@@ -116,4 +128,8 @@ func (k *K8sReporter) Init(ctx context.Context) error {
 		return fmt.Errorf("register pod handler: %w", err)
 	}
 	return nil
+}
+
+func (k *K8sReporter) Start(stop chan struct{}) {
+	k.podInformer.Run(stop)
 }

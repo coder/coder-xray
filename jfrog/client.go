@@ -22,11 +22,11 @@ type Client struct {
 	user    string
 }
 
-func XRayClient(url, user, token string) (*jfroghttpclient.JfrogHttpClient, error) {
+func XRayClient(url, user, token string) (*Client, error) {
 	details := auth.NewXrayDetails()
 	details.SetAccessToken(token)
 	details.SetUser(user)
-	details.SetUrl("https://cdr.jfrog.io")
+	details.SetUrl(url)
 	conf, err := config.NewConfigBuilder().SetServiceDetails(details).Build()
 	if err != nil {
 		return nil, xerrors.Errorf("new config builder: %w", err)
@@ -35,7 +35,12 @@ func XRayClient(url, user, token string) (*jfroghttpclient.JfrogHttpClient, erro
 	if err != nil {
 		return nil, xerrors.Errorf("new xray manager: %w", err)
 	}
-	return mgr.Client(), nil
+	return &Client{
+		client:  mgr.Client(),
+		baseURL: url,
+		user:    user,
+		token:   token,
+	}, nil
 }
 
 type securityResultsPayload struct {
