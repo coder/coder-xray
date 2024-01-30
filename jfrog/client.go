@@ -115,7 +115,7 @@ func ParseImage(image string) (Image, error) {
 
 func root(path string) string {
 	dir := filepath.Dir(path)
-	if dir == path {
+	if dir == "." {
 		return path
 	}
 	return root(dir)

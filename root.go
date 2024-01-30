@@ -10,12 +10,17 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 
+	"cdr.dev/slog"
+	"cdr.dev/slog/sloggers/sloghuman"
+
 	"github.com/coder/xray/jfrog"
+	reporter "github.com/coder/xray/k8s"
 )
 
 func root() *cobra.Command {
 	var (
 		coderURL         string
+		coderToken       string
 		artifactoryURL   string
 		artifactoryUser  string
 		artifactoryToken string
@@ -64,22 +69,41 @@ func root() *cobra.Command {
 				return xerrors.Errorf("create kubernetes config: %w", err)
 			}
 
-			jClient, err := jfrog.XRayClient(artifactoryURL, artifactoryUser, artifactoryToken)
+			jclient, err := jfrog.XRayClient(artifactoryURL, artifactoryUser, artifactoryToken)
 			if err != nil {
 				return xerrors.Errorf("create artifactory client: %w", err)
 			}
 
+			kr := reporter.K8sReporter{
+				Client:      kclient,
+				JFrogClient: jclient,
+				Namespace:   namespace,
+				CoderURL:    coderParsed,
+				Logger:      slog.Make(sloghuman.Sink(cmd.ErrOrStderr())),
+				CoderToken:  coderToken,
+			}
+
+			err = kr.Init(cmd.Context())
+			if err != nil {
+				return xerrors.Errorf("initialize reporter: %w", err)
+			}
+
+			stopCh := make(chan struct{})
+			defer close(stopCh)
+			go kr.Start(stopCh)
+			<-cmd.Context().Done()
+
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&coderURL, "coder-url", "cu", os.Getenv("CODER_URL"), "URL of the Coder instance")
+	cmd.Flags().StringVarP(&coderURL, "coder-url", "", os.Getenv("CODER_URL"), "URL of the Coder instance")
+	cmd.Flags().StringVarP(&coderToken, "coder-token", "", os.Getenv("CODER_TOKEN"), "Access Token for the Coder instance. Requires Template Admin privileges.")
 	cmd.Flags().StringVarP(&artifactoryURL, "artifactory-url", "", os.Getenv("ARTIFACTORY_URL"), "URL of the JFrog Artifactory instance")
 	cmd.Flags().StringVarP(&artifactoryToken, "artifactory-token", "", os.Getenv("ARTIFACTORY_TOKEN"), "Access Token for JFrog Artifactory instance")
 	cmd.Flags().StringVarP(&artifactoryUser, "artifactory-user", "", os.Getenv("ARTIFACTORY_USER"), "User to interface with JFrog Artifactory instance")
-	cmd.Flags().StringVarP(&kubeConfig, "kubeconfig", "k", "~/.kube/config", "Path to the kubeconfig file")
+	cmd.Flags().StringVarP(&kubeConfig, "kubeconfig", "k", "/home/coder/.kube/config", "Path to the kubeconfig file")
 	cmd.Flags().StringVarP(&namespace, "namespace", "n", os.Getenv("CODER_NAMESPACE"), "Namespace to use when listing pods")
 	cmd.Flags().StringVarP(&fieldSelector, "field-selector", "f", "", "Field selector to use when listing pods")
 	cmd.Flags().StringVarP(&labelSelector, "label-selector", "l", "", "Label selector to use when listing pods")
-	cmd.Flags().StringVarP(&artifactoryToken, "artifactory-token", "", "", "Token to use to fetch scan results for an image")
 	return cmd
 }
