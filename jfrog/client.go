@@ -15,14 +15,18 @@ import (
 	"golang.org/x/xerrors"
 )
 
-type Client struct {
+type Client interface {
+	ScanResults(img Image) (ScanResult, error)
+}
+
+type client struct {
 	client  *jfroghttpclient.JfrogHttpClient
 	baseURL string
 	token   string
 	user    string
 }
 
-func XRayClient(url, user, token string) (*Client, error) {
+func XRayClient(url, user, token string) (Client, error) {
 	details := auth.NewXrayDetails()
 	details.SetAccessToken(token)
 	details.SetUser(user)
@@ -35,7 +39,7 @@ func XRayClient(url, user, token string) (*Client, error) {
 	if err != nil {
 		return nil, xerrors.Errorf("new xray manager: %w", err)
 	}
-	return &Client{
+	return &client{
 		client:  mgr.Client(),
 		baseURL: url,
 		user:    user,
@@ -60,7 +64,7 @@ type SecurityIssues struct {
 	Total    int `json:"total"`
 }
 
-func (c *Client) ScanResults(img Image) (ScanResult, error) {
+func (c *client) ScanResults(img Image) (ScanResult, error) {
 	path := fmt.Sprintf("%s/xray/api/v1/packages/%s/versions?search=%s", c.baseURL, img.Package, img.Version)
 	resp, body, _, err := c.client.SendGet(path, true, &httputils.HttpClientDetails{
 		User:        c.user,

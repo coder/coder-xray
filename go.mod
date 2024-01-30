@@ -10,9 +10,11 @@ require (
 	cdr.dev/slog v1.6.2-0.20230929193652-f0c466fabe10
 	github.com/coder/coder/v2 v2.6.1-0.20240125021520-d9f5cdda9bae
 	github.com/google/go-containerregistry v0.14.0
+	github.com/google/uuid v1.5.0
 	github.com/jfrog/jfrog-client-go v1.31.6
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
+	go.uber.org/mock v0.4.0
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2
 	k8s.io/api v0.29.1
 	k8s.io/apimachinery v0.29.1
@@ -99,7 +101,6 @@ require (
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/nftables v0.1.1-0.20230115205135-9aa6fdf5a28c // indirect
 	github.com/google/pprof v0.0.0-20230817174616-7a8ec2ada47b // indirect
-	github.com/google/uuid v1.5.0 // indirect
 	github.com/gookit/color v1.5.4 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.18.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect

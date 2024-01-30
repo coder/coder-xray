@@ -4,6 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"golang.org/x/xerrors"
+
+	"github.com/google/uuid"
+
 	"github.com/coder/coder/v2/codersdk"
 	"github.com/coder/xray/jfrog"
 
@@ -23,10 +27,11 @@ type K8sReporter struct {
 	Namespace     string
 	CoderClient   CoderClient
 	Logger        slog.Logger
-	JFrogClient   *jfrog.Client
+	JFrogClient   jfrog.Client
+	ResultsChan   chan codersdk.JFrogXrayScan
 
 	// Unexported fields are initialized on calls to Init.
-	podInformer cache.SharedIndexInformer
+	factory informers.SharedInformerFactory
 }
 
 type WorkspaceAgent struct {
@@ -35,14 +40,14 @@ type WorkspaceAgent struct {
 }
 
 func (k *K8sReporter) Init(ctx context.Context) error {
-	podFactory := informers.NewSharedInformerFactoryWithOptions(k.Client, 0, informers.WithNamespace(k.Namespace), informers.WithTweakListOptions(func(lo *v1.ListOptions) {
+	k.factory = informers.NewSharedInformerFactoryWithOptions(k.Client, 0, informers.WithNamespace(k.Namespace), informers.WithTweakListOptions(func(lo *v1.ListOptions) {
 		lo.FieldSelector = k.FieldSelector
 		lo.LabelSelector = k.LabelSelector
 	}))
 
-	k.podInformer = podFactory.Core().V1().Pods().Informer()
+	podInformer := k.factory.Core().V1().Pods().Informer()
 
-	_, err := k.podInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+	_, err := podInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			pod, ok := obj.(*corev1.Pod)
 			if !ok {
@@ -53,63 +58,72 @@ func (k *K8sReporter) Init(ctx context.Context) error {
 			log := k.Logger.With(
 				slog.F("pod_name", pod.Name),
 			)
-			var isWorkspace bool
 			for _, container := range pod.Spec.Containers {
-				var agentToken string
-				for _, env := range container.Env {
-					if env.Name != "CODER_AGENT_TOKEN" {
-						continue
-					}
-					isWorkspace = true
-					agentToken = env.Value
-					break
-				}
-				if agentToken == "" {
-					continue
-				}
-
 				log = log.With(
 					slog.F("container_name", container.Name),
 					slog.F("container_image", container.Image),
 				)
 
-				image, err := jfrog.ParseImage(container.Image)
-				if err != nil {
-					log.Error(ctx, "parse image", slog.Error(err))
-					return
-				}
+				scan, err := func() (codersdk.JFrogXrayScan, error) {
+					var agentToken string
+					for _, env := range container.Env {
+						if env.Name != "CODER_AGENT_TOKEN" {
+							continue
+						}
+						agentToken = env.Value
+						break
+					}
+					if agentToken == "" {
+						return codersdk.JFrogXrayScan{}, nil
+					}
 
-				scan, err := k.JFrogClient.ScanResults(image)
-				if err != nil {
-					log.Error(ctx, "fetch scan results", slog.Error(err))
-					return
-				}
+					image, err := jfrog.ParseImage(container.Image)
+					if err != nil {
+						return codersdk.JFrogXrayScan{}, xerrors.Errorf("parse image: %w", err)
+					}
 
-				manifest, err := k.CoderClient.AgentManifest(ctx, agentToken)
-				if err != nil {
-					log.Error(ctx, "Get agent manifest", slog.Error(err))
-					return
-				}
+					scan, err := k.JFrogClient.ScanResults(image)
+					if err != nil {
+						return codersdk.JFrogXrayScan{}, xerrors.Errorf("fetch scan results: %w", err)
+					}
 
-				log = log.With(
-					slog.F("workspace_id", manifest.WorkspaceID),
-					slog.F("agent_id", manifest.AgentID),
-					slog.F("workspace_name", manifest.WorkspaceName),
-				)
+					manifest, err := k.CoderClient.AgentManifest(ctx, agentToken)
+					if err != nil {
+						return codersdk.JFrogXrayScan{}, xerrors.Errorf("agent manifest: %w", err)
+					}
 
-				err = k.CoderClient.PostJFrogXrayScan(ctx, codersdk.JFrogXrayScan{
-					WorkspaceID: manifest.WorkspaceID,
-					AgentID:     manifest.AgentID,
-					Critical:    scan.SecurityIssues.Critical,
-					High:        scan.SecurityIssues.High,
-				})
+					log = log.With(
+						slog.F("workspace_id", manifest.WorkspaceID),
+						slog.F("agent_id", manifest.AgentID),
+						slog.F("workspace_name", manifest.WorkspaceName),
+					)
+
+					req := codersdk.JFrogXrayScan{
+						WorkspaceID: manifest.WorkspaceID,
+						AgentID:     manifest.AgentID,
+						Critical:    scan.SecurityIssues.Critical,
+						High:        scan.SecurityIssues.High,
+					}
+					err = k.CoderClient.PostJFrogXrayScan(ctx, req)
+					if err != nil {
+						return codersdk.JFrogXrayScan{}, xerrors.Errorf("post xray scan: %w", err)
+					}
+
+					return req, nil
+				}()
 				if err != nil {
-					log.Error(ctx, "post xray results", slog.Error(err))
-					return
+					log.Error(ctx, "scan agent", slog.Error(err))
+					break
 				}
-			}
-			if isWorkspace {
-				log.Info(ctx, "uploaded workspace results!", slog.F("pod_name", pod.Name), slog.F("namespace", pod.Namespace))
+				if scan.AgentID != uuid.Nil {
+					log.Info(ctx, "uploaded agent results!", slog.F("pod_name", pod.Name), slog.F("namespace", pod.Namespace))
+					if k.ResultsChan != nil {
+						// This should only be populated during tests
+						// so it's ok to assume an unbuffered channel is
+						// going to block until read.
+						k.ResultsChan <- scan
+					}
+				}
 			}
 		},
 	})
@@ -120,5 +134,5 @@ func (k *K8sReporter) Init(ctx context.Context) error {
 }
 
 func (k *K8sReporter) Start(stop chan struct{}) {
-	k.podInformer.Run(stop)
+	k.factory.Start(stop)
 }
