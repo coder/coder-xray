@@ -14,7 +14,7 @@ import (
 	"cdr.dev/slog/sloggers/sloghuman"
 
 	"github.com/coder/xray/jfrog"
-	reporter "github.com/coder/xray/k8s"
+	"github.com/coder/xray/reporter"
 )
 
 func root() *cobra.Command {
@@ -74,13 +74,14 @@ func root() *cobra.Command {
 				return xerrors.Errorf("create artifactory client: %w", err)
 			}
 
+			coderClient := reporter.NewClient(coderParsed, coderToken)
+
 			kr := reporter.K8sReporter{
 				Client:      kclient,
 				JFrogClient: jclient,
+				CoderClient: coderClient,
 				Namespace:   namespace,
-				CoderURL:    coderParsed,
 				Logger:      slog.Make(sloghuman.Sink(cmd.ErrOrStderr())),
-				CoderToken:  coderToken,
 			}
 
 			err = kr.Init(cmd.Context())

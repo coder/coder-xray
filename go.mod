@@ -12,6 +12,7 @@ require (
 	github.com/google/go-containerregistry v0.14.0
 	github.com/jfrog/jfrog-client-go v1.31.6
 	github.com/spf13/cobra v1.8.0
+	github.com/stretchr/testify v1.8.4
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2
 	k8s.io/api v0.29.1
 	k8s.io/apimachinery v0.29.1
@@ -71,6 +72,7 @@ require (
 	github.com/ebitengine/purego v0.5.0-alpha.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
+	github.com/evanphx/json-patch v5.6.0+incompatible // indirect
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/forPelevin/gomoji v1.1.8 // indirect
 	github.com/fxamacker/cbor/v2 v2.4.0 // indirect
@@ -162,6 +164,7 @@ require (
 	github.com/pion/udp v0.1.2 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_golang v1.18.0 // indirect
 	github.com/prometheus/client_model v0.5.0 // indirect
 	github.com/prometheus/common v0.46.0 // indirect

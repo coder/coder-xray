@@ -3,10 +3,8 @@ package reporter
 import (
 	"context"
 	"fmt"
-	"net/url"
 
 	"github.com/coder/coder/v2/codersdk"
-	"github.com/coder/coder/v2/codersdk/agentsdk"
 	"github.com/coder/xray/jfrog"
 
 	corev1 "k8s.io/api/core/v1"
@@ -23,14 +21,12 @@ type K8sReporter struct {
 	LabelSelector string
 	FieldSelector string
 	Namespace     string
-	CoderURL      *url.URL
+	CoderClient   CoderClient
 	Logger        slog.Logger
-	CoderToken    string
 	JFrogClient   *jfrog.Client
 
-	ctx         context.Context
+	// Unexported fields are initialized on calls to Init.
 	podInformer cache.SharedIndexInformer
-	errChan     chan error
 }
 
 type WorkspaceAgent struct {
@@ -39,9 +35,6 @@ type WorkspaceAgent struct {
 }
 
 func (k *K8sReporter) Init(ctx context.Context) error {
-	k.ctx = ctx
-	k.errChan = make(chan error)
-
 	podFactory := informers.NewSharedInformerFactoryWithOptions(k.Client, 0, informers.WithNamespace(k.Namespace), informers.WithTweakListOptions(func(lo *v1.ListOptions) {
 		lo.FieldSelector = k.FieldSelector
 		lo.LabelSelector = k.LabelSelector
@@ -92,9 +85,7 @@ func (k *K8sReporter) Init(ctx context.Context) error {
 					return
 				}
 
-				agentClient := agentsdk.New(k.CoderURL)
-				agentClient.SetSessionToken(agentToken)
-				manifest, err := agentClient.Manifest(ctx)
+				manifest, err := k.CoderClient.AgentManifest(ctx, agentToken)
 				if err != nil {
 					log.Error(ctx, "Get agent manifest", slog.Error(err))
 					return
@@ -106,9 +97,7 @@ func (k *K8sReporter) Init(ctx context.Context) error {
 					slog.F("workspace_name", manifest.WorkspaceName),
 				)
 
-				cclient := codersdk.New(k.CoderURL)
-				cclient.SetSessionToken(k.CoderToken)
-				err = cclient.PostJFrogXrayScan(ctx, codersdk.JFrogXrayScan{
+				err = k.CoderClient.PostJFrogXrayScan(ctx, codersdk.JFrogXrayScan{
 					WorkspaceID: manifest.WorkspaceID,
 					AgentID:     manifest.AgentID,
 					Critical:    scan.SecurityIssues.Critical,
