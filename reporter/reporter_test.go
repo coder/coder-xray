@@ -70,6 +70,7 @@ func TestK8SReporter(t *testing.T) {
 		AgentID:     expectedAgentID,
 		Critical:    expectedCrit,
 		High:        expectedHigh,
+		Medium:      expectedMedium,
 	})
 
 	rep := reporter.K8sReporter{
@@ -115,6 +116,7 @@ func TestK8SReporter(t *testing.T) {
 		AgentID:     expectedAgentID,
 		Critical:    expectedCrit,
 		High:        expectedHigh,
+		Medium:      expectedMedium,
 	}
 	var actualResult codersdk.JFrogXrayScan
 	select {

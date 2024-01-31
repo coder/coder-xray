@@ -7,10 +7,10 @@ replace tailscale.com => github.com/coder/tailscale v1.1.1-0.20231205095743-61c9
 replace github.com/gliderlabs/ssh => github.com/coder/ssh v0.0.0-20230621095435-9a7e23486f1c
 
 require (
-	cdr.dev/slog v1.6.2-0.20230929193652-f0c466fabe10
-	github.com/coder/coder/v2 v2.6.1-0.20240125021520-d9f5cdda9bae
+	cdr.dev/slog v1.6.2-0.20240126064726-20367d4aede6
+	github.com/coder/coder/v2 v2.7.2-0.20240130231137-0c30dde9b581
 	github.com/google/go-containerregistry v0.14.0
-	github.com/google/uuid v1.5.0
+	github.com/google/uuid v1.6.0
 	github.com/jfrog/jfrog-client-go v1.31.6
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
@@ -228,7 +228,7 @@ require (
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20231106174013-bbf56f31fb17 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231120223509-83a465c0220f // indirect
-	google.golang.org/grpc v1.60.1 // indirect
+	google.golang.org/grpc v1.61.0 // indirect
 	google.golang.org/protobuf v1.32.0 // indirect
 	gopkg.in/DataDog/dd-trace-go.v1 v1.57.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect

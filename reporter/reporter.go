@@ -103,6 +103,7 @@ func (k *K8sReporter) Init(ctx context.Context) error {
 						AgentID:     manifest.AgentID,
 						Critical:    scan.SecurityIssues.Critical,
 						High:        scan.SecurityIssues.High,
+						Medium:      scan.SecurityIssues.Medium,
 					}
 					err = k.CoderClient.PostJFrogXrayScan(ctx, req)
 					if err != nil {
