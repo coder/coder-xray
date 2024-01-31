@@ -34,11 +34,6 @@ type K8sReporter struct {
 	factory informers.SharedInformerFactory
 }
 
-type WorkspaceAgent struct {
-	Image string
-	Token string
-}
-
 func (k *K8sReporter) Init(ctx context.Context) error {
 	k.factory = informers.NewSharedInformerFactoryWithOptions(k.Client, 0, informers.WithNamespace(k.Namespace), informers.WithTweakListOptions(func(lo *v1.ListOptions) {
 		lo.FieldSelector = k.FieldSelector

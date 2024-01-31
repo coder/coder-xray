@@ -43,12 +43,12 @@ func root() *cobra.Command {
 			}
 
 			if artifactoryURL == "" {
-				return xerrors.New("--coder-url is required")
+				return xerrors.New("--artifactory-url is required")
 			}
 
 			_, err = url.Parse(artifactoryURL)
 			if err != nil {
-				return fmt.Errorf("parse coder URL: %w", err)
+				return fmt.Errorf("parse artifactory URL: %w", err)
 			}
 
 			if artifactoryUser == "" {
@@ -75,13 +75,13 @@ func root() *cobra.Command {
 			}
 
 			coderClient := reporter.NewClient(coderParsed, coderToken)
-
+			logger := slog.Make(sloghuman.Sink(cmd.ErrOrStderr()))
 			kr := reporter.K8sReporter{
 				Client:      kclient,
 				JFrogClient: jclient,
 				CoderClient: coderClient,
 				Namespace:   namespace,
-				Logger:      slog.Make(sloghuman.Sink(cmd.ErrOrStderr())),
+				Logger:      logger,
 			}
 
 			err = kr.Init(cmd.Context())
@@ -91,8 +91,10 @@ func root() *cobra.Command {
 
 			stopCh := make(chan struct{})
 			defer close(stopCh)
-			go kr.Start(stopCh)
+			kr.Start(stopCh)
 			<-cmd.Context().Done()
+
+			logger.Info(cmd.Context(), "exiting")
 
 			return nil
 		},
