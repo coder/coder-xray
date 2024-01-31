@@ -34,7 +34,7 @@ func TestK8SReporter(t *testing.T) {
 	)
 
 	var (
-		ctx, cancel = context.WithTimeout(context.Background(), time.Second*10)
+		ctx = context.Background()
 
 		expectedAgentID     = uuid.New()
 		expectedWorkspaceID = uuid.New()
@@ -44,7 +44,6 @@ func TestK8SReporter(t *testing.T) {
 		jfrogClient = jfrog.NewMockClient(gomock.NewController(t))
 		resultsCh   = make(chan codersdk.JFrogXrayScan)
 	)
-	defer cancel()
 
 	jfrogClient.EXPECT().ScanResults(jfrog.Image{
 		Repo:    "my-repo",
@@ -118,11 +117,10 @@ func TestK8SReporter(t *testing.T) {
 		High:        expectedHigh,
 		Medium:      expectedMedium,
 	}
-	var actualResult codersdk.JFrogXrayScan
 	select {
-	case actualResult = <-resultsCh:
-	case <-ctx.Done():
+	case actualResult := <-resultsCh:
+		require.Equal(t, expectedResult, actualResult)
+	case <-time.After(time.Second * 10):
 		t.Fatalf("ctx timed out waiting for result")
 	}
-	require.Equal(t, expectedResult, actualResult)
 }
