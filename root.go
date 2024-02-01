@@ -19,10 +19,15 @@ import (
 
 func root() *cobra.Command {
 	var (
-		coderURL       string
-		coderToken     string
-		artifactoryURL string
-		labelSelector  string
+		coderURL         string
+		coderToken       string
+		artifactoryURL   string
+		artifactoryUser  string
+		artifactoryToken string
+		fieldSelector    string
+		kubeConfig       string
+		namespace        string
+		labelSelector    string
 	)
 	cmd := &cobra.Command{
 		Use:   "scan",
