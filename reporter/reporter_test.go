@@ -45,11 +45,13 @@ func TestK8SReporter(t *testing.T) {
 		resultsCh   = make(chan codersdk.JFrogXrayScan)
 	)
 
-	jfrogClient.EXPECT().ScanResults(jfrog.Image{
+	img := jfrog.Image{
 		Repo:    "my-repo",
 		Package: "ubuntu",
 		Version: "22.04",
-	}).Return(jfrog.ScanResult{
+	}
+
+	xrayResult := jfrog.ScanResult{
 		Version: "22.04",
 		SecurityIssues: jfrog.SecurityIssues{
 			Critical: expectedCrit,
@@ -57,7 +59,12 @@ func TestK8SReporter(t *testing.T) {
 			Medium:   expectedMedium,
 			Total:    expectedCrit + expectedHigh + expectedMedium,
 		},
-	}, nil)
+		PackageID: "docker://my-repo/ubuntu",
+	}
+
+	jfrogClient.EXPECT().ScanResults(img).Return(xrayResult, nil)
+
+	jfrogClient.EXPECT().ResultsURL(img, xrayResult.PackageID)
 
 	coderClient.EXPECT().AgentManifest(ctx, expectedAgentToken).Return(agentsdk.Manifest{
 		WorkspaceID: expectedWorkspaceID,
