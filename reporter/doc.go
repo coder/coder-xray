@@ -2,4 +2,4 @@
 // and uploading results to a Coder deployment.
 package reporter
 
-//go:generate mockgen -destination ./codermock.go -package reporter github.com/coder/xray/reporter CoderClient
+//go:generate mockgen -destination ./codermock.go -package reporter github.com/coder/coder-xray/reporter CoderClient

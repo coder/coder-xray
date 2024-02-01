@@ -17,6 +17,7 @@ import (
 
 type Client interface {
 	ScanResults(img Image) (ScanResult, error)
+	ResultsURL(img Image, packageID string) string
 }
 
 type client struct {
@@ -55,6 +56,7 @@ type securityResultsPayload struct {
 type ScanResult struct {
 	Version        string         `json:"version"`
 	SecurityIssues SecurityIssues `json:"sec_issues"`
+	PackageID      string         `json:"package_id"`
 }
 
 type SecurityIssues struct {
@@ -96,6 +98,10 @@ type Image struct {
 	Repo    string
 	Package string
 	Version string
+}
+
+func (c *client) ResultsURL(img Image, packageID string) string {
+	return fmt.Sprintf("%s/ui/scans-list/packages-scans/%s/%s/scan-descendants/%s?package_id=%s&version=%s", c.baseURL, img.Repo, img.Package, img.Version, packageID, img.Version)
 }
 
 func ParseImage(image string) (Image, error) {

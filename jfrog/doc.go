@@ -2,4 +2,4 @@
 // artifactory instance.
 package jfrog
 
-//go:generate mockgen -destination ./mock.go -package jfrog github.com/coder/xray/jfrog Client
+//go:generate mockgen -destination ./mock.go -package jfrog github.com/coder/coder-xray/jfrog Client
