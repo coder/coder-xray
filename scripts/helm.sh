@@ -65,7 +65,7 @@ fi
 # path of `helm package` except for the directory name :/
 temp_dir="$(mktemp -d)"
 
-cd ./
+cd ./helm
 log "--- Packaging helm chart for version $version ($output_path)"
 helm package \
 	--version "$version" \
