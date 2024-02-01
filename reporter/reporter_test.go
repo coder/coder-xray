@@ -14,10 +14,10 @@ import (
 
 	"cdr.dev/slog/sloggers/slogtest"
 
+	"github.com/coder/coder-xray/jfrog"
+	"github.com/coder/coder-xray/reporter"
 	"github.com/coder/coder/v2/codersdk"
 	"github.com/coder/coder/v2/codersdk/agentsdk"
-	"github.com/coder/xray/jfrog"
-	"github.com/coder/xray/reporter"
 )
 
 func TestK8SReporter(t *testing.T) {

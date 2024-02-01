@@ -8,8 +8,8 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/coder/coder-xray/jfrog"
 	"github.com/coder/coder/v2/codersdk"
-	"github.com/coder/xray/jfrog"
 
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
