@@ -1,4 +1,4 @@
-module github.com/coder/xray
+module github.com/coder/coder-xray
 
 go 1.21
 

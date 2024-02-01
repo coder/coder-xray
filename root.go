@@ -13,8 +13,8 @@ import (
 	"cdr.dev/slog"
 	"cdr.dev/slog/sloggers/sloghuman"
 
-	"github.com/coder/xray/jfrog"
-	"github.com/coder/xray/reporter"
+	"github.com/coder/coder-xray/jfrog"
+	"github.com/coder/coder-xray/reporter"
 )
 
 func root() *cobra.Command {
@@ -101,9 +101,9 @@ func root() *cobra.Command {
 	}
 	cmd.Flags().StringVarP(&coderURL, "coder-url", "", os.Getenv("CODER_URL"), "URL of the Coder instance")
 	cmd.Flags().StringVarP(&coderToken, "coder-token", "", os.Getenv("CODER_TOKEN"), "Access Token for the Coder instance. Requires Template Admin privileges.")
-	cmd.Flags().StringVarP(&artifactoryURL, "artifactory-url", "", os.Getenv("ARTIFACTORY_URL"), "URL of the JFrog Artifactory instance")
-	cmd.Flags().StringVarP(&artifactoryToken, "artifactory-token", "", os.Getenv("ARTIFACTORY_TOKEN"), "Access Token for JFrog Artifactory instance")
-	cmd.Flags().StringVarP(&artifactoryUser, "artifactory-user", "", os.Getenv("ARTIFACTORY_USER"), "User to interface with JFrog Artifactory instance")
+	cmd.Flags().StringVarP(&artifactoryURL, "artifactory-url", "", os.Getenv("CODER_ARTIFACTORY_URL"), "URL of the JFrog Artifactory instance")
+	cmd.Flags().StringVarP(&artifactoryToken, "artifactory-token", "", os.Getenv("CODER_ARTIFACTORY_TOKEN"), "Access Token for JFrog Artifactory instance")
+	cmd.Flags().StringVarP(&artifactoryUser, "artifactory-user", "", os.Getenv("CODER_ARTIFACTORY_USER"), "User to interface with JFrog Artifactory instance")
 	cmd.Flags().StringVarP(&kubeConfig, "kubeconfig", "k", "/home/coder/.kube/config", "Path to the kubeconfig file")
 	cmd.Flags().StringVarP(&namespace, "namespace", "n", os.Getenv("CODER_NAMESPACE"), "Namespace to use when listing pods")
 	cmd.Flags().StringVarP(&fieldSelector, "field-selector", "f", "", "Field selector to use when listing pods")
