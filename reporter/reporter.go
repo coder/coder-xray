@@ -98,6 +98,9 @@ func (k *K8sReporter) Init(ctx context.Context) error {
 						}
 						log.Warn(ctx, "failed to fetch agent manifest", slog.Error(err))
 					}
+					if err != nil {
+						return codersdk.JFrogXrayScan{}, xerrors.Errorf("fetch agent manifest: %w", err)
+					}
 
 					log = log.With(
 						slog.F("workspace_id", manifest.WorkspaceID),
