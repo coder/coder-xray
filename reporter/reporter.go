@@ -3,6 +3,7 @@ package reporter
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"golang.org/x/xerrors"
 
@@ -10,6 +11,8 @@ import (
 
 	"github.com/coder/coder-xray/jfrog"
 	"github.com/coder/coder/v2/codersdk"
+	"github.com/coder/coder/v2/codersdk/agentsdk"
+	"github.com/coder/retry"
 
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -82,9 +85,18 @@ func (k *K8sReporter) Init(ctx context.Context) error {
 						return codersdk.JFrogXrayScan{}, xerrors.Errorf("fetch scan results: %w", err)
 					}
 
-					manifest, err := k.CoderClient.AgentManifest(ctx, agentToken)
-					if err != nil {
-						return codersdk.JFrogXrayScan{}, xerrors.Errorf("agent manifest: %w", err)
+					var manifest agentsdk.Manifest
+					retryCtx, cancel := context.WithTimeout(ctx, time.Minute*10)
+					defer cancel()
+					for r := retry.New(time.Second, 5*time.Second); r.Wait(retryCtx); {
+						manifest, err = k.CoderClient.AgentManifest(retryCtx, agentToken)
+						if err == nil {
+							break
+						}
+						if xerrors.Is(err, context.Canceled) {
+							break
+						}
+						log.Warn(ctx, "failed to fetch agent manifest", slog.Error(err))
 					}
 
 					log = log.With(

@@ -101,7 +101,7 @@ type Image struct {
 }
 
 func (c *client) ResultsURL(img Image, packageID string) string {
-	return fmt.Sprintf("%s/ui/scans-list/packages-scans/%s/%s/scan-descendants/%s?package_id=%s&version=%s", c.baseURL, img.Repo, img.Package, img.Version, packageID, img.Version)
+	return fmt.Sprintf("%s/ui/scans-list/packages-scans/%s/scan-descendants/%s?package_id=%s&version=%s", c.baseURL, img.Package, img.Version, packageID, img.Version)
 }
 
 func ParseImage(image string) (Image, error) {
