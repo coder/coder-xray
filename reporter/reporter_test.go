@@ -66,7 +66,7 @@ func TestK8SReporter(t *testing.T) {
 
 	jfrogClient.EXPECT().ResultsURL(img, xrayResult.PackageID)
 
-	coderClient.EXPECT().AgentManifest(ctx, expectedAgentToken).Return(agentsdk.Manifest{
+	coderClient.EXPECT().AgentManifest(gomock.Any(), expectedAgentToken).Return(agentsdk.Manifest{
 		WorkspaceID: expectedWorkspaceID,
 		AgentID:     expectedAgentID,
 	}, nil)
