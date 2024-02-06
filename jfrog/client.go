@@ -1,6 +1,7 @@
 package jfrog
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -67,7 +68,8 @@ type SecurityIssues struct {
 }
 
 func (c *client) ScanResults(img Image) (ScanResult, error) {
-	path := fmt.Sprintf("%s/xray/api/v1/packages/%s/versions?search=%s", c.baseURL, img.Package, img.Version)
+	b64str := base64.URLEncoding.EncodeToString([]byte(img.Package))
+	path := fmt.Sprintf("%s/xray/api/v1/packages/%s/versions?search=%s&base64id=true", c.baseURL, b64str, img.Version)
 	resp, body, _, err := c.client.SendGet(path, true, &httputils.HttpClientDetails{
 		User:        c.user,
 		AccessToken: c.token,
