@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/xerrors"
 	"k8s.io/client-go/kubernetes"
+	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
 	"cdr.dev/slog"
@@ -59,7 +60,10 @@ func root() *cobra.Command {
 				return xerrors.New("--artifactory-token is required")
 			}
 
-			config, err := clientcmd.BuildConfigFromFlags("", kubeConfig)
+			config, err := restclient.InClusterConfig()
+			if xerrors.Is(err, restclient.ErrNotInCluster) {
+				config, err = clientcmd.BuildConfigFromFlags("", kubeConfig)
+			}
 			if err != nil {
 				return xerrors.Errorf("build kubeconfig: %w", err)
 			}

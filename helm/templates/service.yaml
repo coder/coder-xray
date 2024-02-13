@@ -59,7 +59,8 @@ spec:
           image: "{{ .Values.image.repo }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
-            - /coder-xray scan
+            - /coder-xray
+            - scan
           env:
             - name: CODER_URL
               value: {{ .Values.coder.url }}
