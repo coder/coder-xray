@@ -16,6 +16,11 @@ import (
 
 	"github.com/coder/coder-xray/jfrog"
 	"github.com/coder/coder-xray/reporter"
+
+	// *Never* remove this. Certificates are not bundled as part
+	// of the container, so this is necessary for all connections
+	// to not be insecure.
+	_ "github.com/breml/rootcerts"
 )
 
 func root() *cobra.Command {
@@ -108,7 +113,7 @@ func root() *cobra.Command {
 	cmd.Flags().StringVarP(&artifactoryURL, "artifactory-url", "", os.Getenv("CODER_ARTIFACTORY_URL"), "URL of the JFrog Artifactory instance")
 	cmd.Flags().StringVarP(&artifactoryToken, "artifactory-token", "", os.Getenv("CODER_ARTIFACTORY_TOKEN"), "Access Token for JFrog Artifactory instance")
 	cmd.Flags().StringVarP(&artifactoryUser, "artifactory-user", "", os.Getenv("CODER_ARTIFACTORY_USER"), "User to interface with JFrog Artifactory instance")
-	cmd.Flags().StringVarP(&kubeConfig, "kubeconfig", "k", "/home/coder/.kube/config", "Path to the kubeconfig file")
+	cmd.Flags().StringVarP(&kubeConfig, "kubeconfig", "k", "~/.kube/config", "Path to the kubeconfig file")
 	cmd.Flags().StringVarP(&namespace, "namespace", "n", os.Getenv("CODER_NAMESPACE"), "Namespace to use when listing pods")
 	cmd.Flags().StringVarP(&fieldSelector, "field-selector", "f", "", "Field selector to use when listing pods")
 	cmd.Flags().StringVarP(&labelSelector, "label-selector", "l", "", "Label selector to use when listing pods")
