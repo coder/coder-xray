@@ -1,7 +1,7 @@
 # coder-xray
 
 [![release](https://img.shields.io/github/v/tag/coder/coder-xray)](https://github.com/coder/coder-xray/pkgs/container/coder-xray)
-[![license](https://img.shields.io/github/license/coder/coder)](./LICENSE)
+[![license](https://img.shields.io/github/license/coder/coder-xray)](./LICENSE)
 
 - Query Artifactory for image vulnerability on workspace startup.
 - Inform users when they are using a vulnerable image.
