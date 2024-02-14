@@ -3,8 +3,6 @@
 [![release](https://img.shields.io/github/v/tag/coder/coder-xray)](https://github.com/coder/coder-xray/pkgs/container/coder-xray)
 [![license](https://img.shields.io/github/license/coder/coder-xray)](./LICENSE)
 
-Query JFrog Artifactory XRay scan results for Coder workspaces to a Coder deployment.
-
 - Query Artifactory for image vulnerability on workspace startup.
 - Inform users when they are using a vulnerable image.
 
@@ -39,4 +37,6 @@ In order to use this service the following is required:
 
 Kubernetes provides an [informers](https://pkg.go.dev/k8s.io/client-go/informers) API that streams pod and event data from the API server.
 
-`coder-xray` listens for pod creation events with containers that have the `CODER_AGENT_TOKEN` environment variable set. All matching pods/containers are then queried against the provided artifactory instance and any XRay results are then pushed to the provided Coder deployment. 
+`coder-xray` listens for pod creation events with containers that have the `CODER_AGENT_TOKEN` environment
+variable set. All matching pods/containers are then queried against the provided Artifactory instance and
+any XRay results are then pushed to the provided Coder deployment. 
