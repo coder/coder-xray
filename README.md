@@ -22,6 +22,8 @@ helm install coder-xray coder-xray/coder-xray \
 	--set artifactory.secretName="<your artifactory secret>"
 ```
 
+For a detailed step by step guide, see the [scanning coder workspaces with xray](https://docs.coder.com/guides/scanning-coder-workspaces-with-xray) guide.
+
 > **Note**
 > For additional customization (such as customizing the image, details on creating a secret, etc.), you can use the
 > [values.yaml](https://github.com/coder/coder-xray/blob/main/helm/values.yaml) file directly.
