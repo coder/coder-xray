@@ -104,7 +104,7 @@ type Image struct {
 }
 
 func (c *client) ResultsURL(img Image, packageID string) string {
-	return fmt.Sprintf("%s/ui/scans-list/repositories/packages-scans/%s/scan-descendants/%s?package_id=%s&version=%s", c.baseURL, url.PathEscape(img.Package), url.PathEscape(img.Version), url.QueryEscape(packageID), url.QueryEscape(img.Version))
+	return fmt.Sprintf("%s/ui/scans-list/packages-scans/%s/scan-descendants/%s?package_id=%s&version=%s", c.baseURL, url.PathEscape(img.Package), url.PathEscape(img.Version), url.QueryEscape(packageID), url.QueryEscape(img.Version))
 }
 
 func ParseImage(image string) (Image, error) {
