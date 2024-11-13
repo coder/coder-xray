@@ -9,7 +9,7 @@ replace github.com/gliderlabs/ssh => github.com/coder/ssh v0.0.0-20230621095435-
 require (
 	cdr.dev/slog v1.6.2-0.20240126064726-20367d4aede6
 	github.com/breml/rootcerts v0.2.16
-	github.com/coder/coder/v2 v2.7.2-0.20240130231137-0c30dde9b581
+	github.com/coder/coder/v2 v2.7.3
 	github.com/coder/retry v1.5.1
 	github.com/google/go-containerregistry v0.14.0
 	github.com/google/uuid v1.6.0
