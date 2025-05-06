@@ -94,6 +94,7 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.artifactory.secretName }}
                   key: token
+          resources: {{- toYaml .Values.resources | nindent 12 }}
           {{- if .Values.volumeMounts }}
           volumeMounts: {{- toYaml .Values.volumeMounts | nindent 12 }}
           {{- end }}
