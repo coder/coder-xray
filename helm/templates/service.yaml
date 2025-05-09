@@ -8,7 +8,7 @@ rules:
   resources: ["pods", "events"]
   verbs: ["get", "watch", "list"]
 - apiGroups: ["apps"]
-  resources: ["replicasets", "events"]
+  resources: ["replicasets"]
   verbs: ["get", "watch", "list"]
 ---
 apiVersion: v1
