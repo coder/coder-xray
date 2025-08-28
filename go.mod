@@ -187,7 +187,7 @@ require (
 	github.com/tcnksm/go-httpstat v0.2.0 // indirect
 	github.com/tinylib/msgp v1.1.8 // indirect
 	github.com/u-root/uio v0.0.0-20230305220412-3e8cd9d6bf63 // indirect
-	github.com/ulikunitz/xz v0.5.11 // indirect
+	github.com/ulikunitz/xz v0.5.14 // indirect
 	github.com/valyala/fasthttp v1.51.0 // indirect
 	github.com/vishvananda/netlink v1.2.1-beta.2 // indirect
 	github.com/vishvananda/netns v0.0.4 // indirect
