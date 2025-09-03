@@ -1,3 +1,6 @@
+> [!CAUTION]
+> This integration is no longer supported in [Coder](https://github.com/coder/coder) as of `v2.22.0`
+
 # coder-xray
 
 [![release](https://img.shields.io/github/v/tag/coder/coder-xray)](https://github.com/coder/coder-xray/pkgs/container/coder-xray)
