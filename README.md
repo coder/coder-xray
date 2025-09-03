@@ -1,4 +1,5 @@
-*NOTE: This integration is no longer supported in [Coder](https://github.com/coder/coder) as of `v2.22.0`*
+> [!CAUTION]
+> This integration is no longer supported in [Coder](https://github.com/coder/coder) as of `v2.22.0`
 
 # coder-xray
 
